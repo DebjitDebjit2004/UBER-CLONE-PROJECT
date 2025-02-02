@@ -9,7 +9,7 @@ const { validationResult } = require('express-validator');
 
 
 // Register User
-module.exports.registerUser = async(req, res, next) => {
+module.exports.registerUser = async (req, res, next) => {
     // Check for validation errors
     const error = validationResult(req);
     if (!error.isEmpty()) {
@@ -17,7 +17,7 @@ module.exports.registerUser = async(req, res, next) => {
     }
 
     // Get the user input
-    const {fullName, email, password} = req.body;
+    const { fullName, email, password } = req.body;
 
     // Check if user already exists
     const isUserExist = await userModel.findOne({ email });
@@ -42,4 +42,42 @@ module.exports.registerUser = async(req, res, next) => {
 
     // Return the JWT token and user
     return res.status(201).json({ token, user });
+}
+
+// Login User
+module.exports.loginUser = async (req, res, next) => {
+    // Check for validation errors
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(400).json({ error: error.array() });
+    }
+
+    // Get the user input
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await userModel.findOne({ email }).select('+password');
+    if (!user) {
+        return res.status(400).json({ message: 'Invalid Email or Password' });
+    }
+
+    // Compare the password
+    const isPasswordMatch = await user.comparePassword(password);
+    if (!isPasswordMatch) {
+        return res.status(400).json({ message: 'Invalid Email or Password' });
+    }
+
+    // Generate JWT token
+    const token = await user.generateAuthToken();
+
+    // Set the JWT token in the cookie
+    res.cookie('token', token);
+
+    // Return the JWT token and user
+    res.status(200).json({ token, user });
+}
+
+module.exports.getUserProfile = async (req, res, next) => {
+    res.status(200).json(req.user);
+
 }

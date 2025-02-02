@@ -4,6 +4,7 @@ dotenv.config();
 //NPM Modules
 const express = require('express')
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 //File Reqiurements
 const connectDatabase = require('./Database/connect.database');
@@ -19,6 +20,7 @@ connectDatabase();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 //Routes
 app.use('/users', userRoutes);
