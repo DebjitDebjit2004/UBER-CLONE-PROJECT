@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 //File Reqiurements
 const connectDatabase = require('./Database/connect.database');
 const userRoutes = require('./Routes/user.routes');
+const captainRoutes = require('./Routes/captain.routes');
 
 //Express App
 const app = express();
@@ -24,5 +25,6 @@ app.use(cookieParser());
 
 //Routes
 app.use('/users', userRoutes);
+app.use('/captains', captainRoutes);
 
 module.exports = app;

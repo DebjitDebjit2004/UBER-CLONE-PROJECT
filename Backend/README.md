@@ -1,175 +1,298 @@
 # Uber Clone Project Backend
 
-## API Documentation
+## File Descriptions
 
-### POST /users/register
+### Routes
 
-#### Description
-This endpoint is used to register a new user.
+#### user.routes.js
+Handles user-related routes such as registration, login, profile retrieval, and logout.
 
-#### Request Body
-The request body must be a JSON object containing the following fields:
-- `fullName`: An object containing:
-  - `firstName` (string, required): The first name of the user. Must be at least 3 characters long.
-  - `lastName` (string, required): The last name of the user. Must be at least 3 characters long.
-- `email` (string, required): The email address of the user. Must be a valid email format.
-- `password` (string, required): The password for the user. Must be at least 8 characters long.
+#### captain.routes.js
+Handles captain-related routes such as registration, login, profile retrieval, and logout.
 
-#### Example Request
-```json
-{
-  "fullName": {
-    "firstName": "John",
-    "lastName": "Doe"
-  },
-  "email": "john.doe@example.com",
-  "password": "password123"
-}
-```
+### Models
 
-#### Responses
+#### user.model.js
+Defines the schema for the User model, including methods for generating JWT tokens, comparing passwords, and hashing passwords.
 
-##### Success (201)
-- **Description**: User successfully registered.
-- **Body**: A JSON object containing the JWT token and user details.
-```json
-{
-  "token": "jwt_token_here",
-  "user": {
-    "_id": "user_id_here",
+#### captain.model.js
+Defines the schema for the Captain model, including methods for generating JWT tokens, comparing passwords, and hashing passwords.
+
+#### blacklist.token.model.js
+Defines the schema for storing blacklisted tokens to prevent reuse after logout.
+
+### Middlewares
+
+#### auth.middleware.js
+Contains middleware functions for authenticating users and captains by verifying JWT tokens and checking if they are blacklisted.
+
+### Controllers
+
+#### user.controller.js
+Handles user-related operations such as registration, login, profile retrieval, and logout.
+
+#### captain.controller.js
+Handles captain-related operations such as registration, login, profile retrieval, and logout.
+
+### Database
+
+#### connect.database.js
+Handles the connection to the MongoDB database using Mongoose.
+
+### Server
+
+#### server.js
+Sets up the HTTP server and listens on the specified port.
+
+### Application
+
+#### app.js
+Initializes the Express application, connects to the database, sets up middlewares, and defines the routes.
+
+## Routes
+
+### User Routes
+
+#### POST /users/register
+Registers a new user.
+- **Request Example:**
+  ```json
+  {
     "fullName": {
       "firstName": "John",
       "lastName": "Doe"
     },
     "email": "john.doe@example.com",
-    // ...other user fields...
+    "password": "password123"
   }
-}
-```
-
-##### Client Error (400)
-- **Description**: Validation error or user already exists.
-- **Body**: A JSON object containing the error message.
-```json
-{
-  "error": [
-    {
-      "msg": "Invalid Email",
-      "param": "email",
-      "location": "body"
+  ```
+- **Response Example:**
+  ```json
+  {
+    "token": "jwt_token",
+    "user": {
+      "_id": "user_id",
+      "fullName": {
+        "firstName": "John",
+        "lastName": "Doe"
+      },
+      "email": "john.doe@example.com"
     }
-  ]
-}
-```
-or
-```json
-{
-  "message": "User already exists"
-}
-```
+  }
+  ```
+- **Status Codes:**
+  - 201: Created
+  - 400: Bad Request
 
-##### Server Error (500)
-- **Description**: Internal server error.
-- **Body**: A JSON object containing the error message.
-```json
-{
-  "message": "Internal server error"
-}
-```
+#### POST /users/login
+Logs in an existing user.
+- **Request Example:**
+  ```json
+  {
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }
+  ```
+- **Response Example:**
+  ```json
+  {
+    "token": "jwt_token",
+    "user": {
+      "_id": "user_id",
+      "fullName": {
+        "firstName": "John",
+        "lastName": "Doe"
+      },
+      "email": "john.doe@example.com"
+    }
+  }
+  ```
+- **Status Codes:**
+  - 200: OK
+  - 400: Bad Request
+  - 401: Unauthorized
 
-### POST /users/login
-
-#### Description
-This endpoint is used to log in an existing user.
-
-#### Request Body
-The request body must be a JSON object containing the following fields:
-- `email` (string, required): The email address of the user. Must be a valid email format.
-- `password` (string, required): The password for the user. Must be at least 8 characters long.
-
-#### Example Request
-```json
-{
-  "email": "john.doe@example.com",
-  "password": "password123"
-}
-```
-
-#### Responses
-
-##### Success (200)
-- **Description**: User successfully logged in.
-- **Body**: A JSON object containing the JWT token and user details.
-```json
-{
-  "token": "jwt_token_here",
-  "user": {
-    "_id": "user_id_here",
+#### GET /users/profile
+Retrieves the profile of the authenticated user.
+- **Response Example:**
+  ```json
+  {
+    "_id": "user_id",
     "fullName": {
       "firstName": "John",
       "lastName": "Doe"
     },
-    "email": "john.doe@example.com",
-    // ...other user fields...
+    "email": "john.doe@example.com"
   }
-}
-```
+  ```
+- **Status Codes:**
+  - 200: OK
+  - 401: Unauthorized
 
-##### Client Error (400)
-- **Description**: Validation error or invalid email/password.
-- **Body**: A JSON object containing the error message.
-```json
-{
-  "error": [
-    {
-      "msg": "Invalid Email",
-      "param": "email",
-      "location": "body"
+#### GET /users/logout
+Logs out the authenticated user.
+- **Response Example:**
+  ```json
+  {
+    "message": "Logged out"
+  }
+  ```
+- **Status Codes:**
+  - 200: OK
+  - 401: Unauthorized
+
+### Captain Routes
+
+#### POST /captains/register
+Registers a new captain.
+- **Request Example:**
+  ```json
+  {
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane.doe@example.com",
+    "password": "password123",
+    "vehicle": {
+      "color": "red",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
     }
-  ]
-}
-```
-or
-```json
-{
-  "message": "Invalid Email or Password"
-}
-```
+  }
+  ```
+- **Response Example:**
+  ```json
+  {
+    "token": "jwt_token",
+    "captain": {
+      "_id": "captain_id",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Doe"
+      },
+      "email": "jane.doe@example.com",
+      "vehicle": {
+        "color": "red",
+        "plate": "ABC123",
+        "capacity": 4,
+        "vehicleType": "car"
+      }
+    }
+  }
+  ```
+- **Status Codes:**
+  - 201: Created
+  - 400: Bad Request
 
-##### Server Error (500)
-- **Description**: Internal server error.
-- **Body**: A JSON object containing the error message.
-```json
-{
-  "message": "Internal server error"
-}
-```
+#### POST /captains/login
+Logs in an existing captain.
+- **Request Example:**
+  ```json
+  {
+    "email": "jane.doe@example.com",
+    "password": "password123"
+  }
+  ```
+- **Response Example:**
+  ```json
+  {
+    "token": "jwt_token",
+    "captain": {
+      "_id": "captain_id",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Doe"
+      },
+      "email": "jane.doe@example.com",
+      "vehicle": {
+        "color": "red",
+        "plate": "ABC123",
+        "capacity": 4,
+        "vehicleType": "car"
+      }
+    }
+  }
+  ```
+- **Status Codes:**
+  - 200: OK
+  - 400: Bad Request
+  - 401: Unauthorized
 
-## Middlewares
+#### GET /captains/profile
+Retrieves the profile of the authenticated captain.
+- **Response Example:**
+  ```json
+  {
+    "captain": {
+      "_id": "captain_id",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Doe"
+      },
+      "email": "jane.doe@example.com",
+      "vehicle": {
+        "color": "red",
+        "plate": "ABC123",
+        "capacity": 4,
+        "vehicleType": "car"
+      }
+    }
+  }
+  ```
+- **Status Codes:**
+  - 200: OK
+  - 401: Unauthorized
+
+#### GET /captains/logout
+Logs out the authenticated captain.
+- **Response Example:**
+  ```json
+  {
+    "message": "Logout successfully"
+  }
+  ```
+- **Status Codes:**
+  - 200: OK
+  - 401: Unauthorized
+
+## Models
+
+### User Model
+- **Fields:**
+  - `fullName`: Object containing `firstName` and `lastName`
+  - `email`: String, required, unique
+  - `password`: String, required
+  - `socketId`: String
+- **Methods:**
+  - `generateAuthToken`: Generates a JWT token
+  - `comparePassword`: Compares a given password with the hashed password
+  - `hashPassword`: Hashes a given password
+
+### Captain Model
+- **Fields:**
+  - `fullname`: Object containing `firstname` and `lastname`
+  - `email`: String, required, unique
+  - `password`: String, required
+  - `socketId`: String
+  - `status`: String, enum ['active', 'inactive'], default 'inactive'
+  - `vehicle`: Object containing `color`, `plate`, `capacity`, `vehicleType`
+  - `location`: Object containing `ltd` and `lng`
+- **Methods:**
+  - `generateAuthToken`: Generates a JWT token
+  - `comparePassword`: Compares a given password with the hashed password
+  - `hashPassword`: Hashes a given password
+
+### Blacklist Token Model
+- **Fields:**
+  - `token`: String, required, unique
+  - `createdAt`: Date, default Date.now, expires in 24 hours
+
+## Authentication Middlewares
 
 ### auth.middleware.js
+Contains middleware functions for authenticating users and captains by verifying JWT tokens and checking if they are blacklisted.
 
-#### authUser
-This middleware is used to authenticate the user by verifying the JWT token. It checks for the token in the cookies or the `Authorization` header. If the token is valid, it attaches the user object to the request and calls the next middleware. If the token is invalid or not present, it returns a 401 Unauthorized error.
-
-```javascript
-const userModel = require('../Models/user.model');
-const jwt = require('jsonwebtoken');
-
-module.exports.authUser = async (req, res, next) => {
-    const token = req.cookies.token || req.headers.authorization.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'Unauthorized Access' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userModel.findById(decoded._id);  
-        req.user = user;
-        return next();
-    } catch (error) {
-        return res.status(401).json({ message: 'Unauthorized Access' });
-    }
-}
-```
+- **authUser**: Verifies the JWT token for users, checks if it is blacklisted, and sets the user in the request object.
+- **authCaptain**: Verifies the JWT token for captains, checks if it is blacklisted, and sets the captain in the request object.
